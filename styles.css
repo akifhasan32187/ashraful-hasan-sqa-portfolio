@@ -182,7 +182,7 @@ body {
 }
 
 .typing-text {
-  font-size: 1.5rem;
+  font-size: 2.0rem;
   color: var(--text); /* Use the --text variable for the base color */
   border-right: 2px solid var(--primary);
   padding-right: 5px;
@@ -306,8 +306,7 @@ body {
 
 .company {
   color: var(--text);
-  opacity: 0.;
-  
+  opacity: 0.8;
 }
 
 .duration {
@@ -333,6 +332,40 @@ body {
   color: var(--primary);
   position: absolute;
   left: -1.5rem;
+}
+
+/* Education Section */
+.education-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.education-item {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.education-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.education-item h3 {
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.education-item .institution {
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.education-item .year {
+  color: var(--text-light);
+  font-size: 0.875rem;
 }
 
 /* Skills */
@@ -403,7 +436,7 @@ body {
 .tags span {
   background: var(--input-bg);
   color: var(--primary);
-  padding: 0.35rem 0.75rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 1rem;
   font-size: 0.875rem;
 }
@@ -443,6 +476,57 @@ body {
   background: linear-gradient(to right, #000044, #000088);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 51, 0.3);
+}
+
+/* Certifications Section */
+.certifications-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.certification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.certification-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.certification-item h3 {
+  color: var(--text);
+  margin-bottom: 0;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.cert-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(to right, #000033, #000066);
+  color: white;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.cert-link:hover {
+  background: linear-gradient(to right, #000044, #000088);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 51, 0.3);
+}
+
+.cert-link i {
+  font-size: 1rem;
 }
 
 /* Contact Form */
@@ -485,6 +569,12 @@ textarea {
   resize: vertical;
 }
 
+#status-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+}
+
 /* Footer */
 .dark-footer {
   background: #000000;
@@ -525,9 +615,9 @@ textarea {
   text-align: center;
 }
 
-/* Theme Toggle */
 .theme-toggle {
-  position: static;
+  position: relative; /* Change from static to relative */
+  top: 0.6rem; /* Adjust this value to move the icon down */
   margin-left: 2rem;
   background: none;
   box-shadow: none;
@@ -584,5 +674,29 @@ textarea {
   .skills-grid {
     grid-template-columns: 1fr;
   }
+
+  .certification-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .cert-link {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
+@media (max-width: 480px) {
+  .education-item h3 {
+    font-size: 1.1rem;
+  }
+
+  .education-item .institution {
+    font-size: 0.9rem;
+  }
+
+  .certification-item h3 {
+    font-size: 1rem;
+  }
+}

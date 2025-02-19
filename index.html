@@ -2,6 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <link rel="shortcut icon" type="x-icon" href="images/icon.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.M. Ashraful Hasan - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
@@ -17,8 +18,10 @@
                 <a href="#home">Home</a>
                 <a href="#about">About</a>
                 <a href="#experience">Experience</a>
+                <a href="#education">Education</a>
                 <a href="#skills">Skills</a>
                 <a href="#projects">Projects</a>
+                <a href="#certifications">Certifications</a>
                 <a href="#contact">Contact</a>
                 <div class="theme-toggle">
                     <i class="fas fa-moon"></i>
@@ -68,6 +71,27 @@
                     <li>Build interfaces for automated script execution</li>
                     <li>Work with SDLC methodologies (Agile/Waterfall)</li>
                 </ul>
+            </div>
+        </section>
+
+        <section id="education" class="section">
+            <h2>Education</h2>
+            <div class="card education-card">
+                <div class="education-item">
+                    <h3>B.Sc. (Eng.) in Computer Science and Engineering</h3>
+                    <p class="institution">Department of Electrical and Computer Engineering (ECE), North South University</p>
+                    <p class="year">Passing Year: 2023</p>
+                </div>
+                <div class="education-item">
+                    <h3>Higher Secondary Certificate</h3>
+                    <p class="institution">Science, Dhaka City College, Dhaka</p>
+                    <p class="year">Passing Year: 2018</p>
+                </div>
+                <div class="education-item">
+                    <h3>Secondary School Certificate</h3>
+                    <p class="institution">Science, Dhanmondi Govt. Boys' High School, Dhaka</p>
+                    <p class="year">Passing Year: 2016</p>
+                </div>
             </div>
         </section>
 
@@ -266,8 +290,7 @@
                         to help users efficiently operate and manage the system’s features.</p>
                     <div class="tags">
                         <span>MkDocs</span>
-                        <span>Documentation</span>                          
-                        
+                        <span>Documentation</span>
                     </div>
                     <div class="project-links">
                         <a href="https://reidun-documentation.rebingtest.com/" class="project-btn">
@@ -297,16 +320,44 @@
             </div>
         </section>
 
+        <section id="certifications" class="section">
+            <h2>Certifications</h2>
+            <div class="card certifications-card">
+                <div class="certification-item">
+                    <h3>Introduction to Manual Testing</h3>
+                    <a href="https://www.mygreatlearning.com/certificate/PLJJKBSG" target="_blank" class="cert-link">
+                        <i class="fas fa-certificate"></i>
+                        View Certificate
+                    </a>
+                </div>
+                <div class="certification-item">
+                    <h3>Software Development Life Cycle Fundamentals - SDLC</h3>
+                    <a href="https://www.mygreatlearning.com/certificate/XIUHGCFH" target="_blank" class="cert-link">
+                        <i class="fas fa-certificate"></i>
+                        View Certificate
+                    </a>
+                </div>
+                <div class="certification-item">
+                    <h3>Selenium with Python</h3>
+                    <a href="https://www.mygreatlearning.com/certificate/FNXHOBNI" target="_blank" class="cert-link">
+                        <i class="fas fa-certificate"></i>
+                        View Certificate
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <section id="contact" class="section">
             <h2>Contact Me</h2>
             <div class="card contact-card">
                 <h3>Get in touch</h3>
-                <form id="contact-form">
-                    <input type="text" placeholder="Your Name" required>
-                    <input type="email" placeholder="Your Email" required>
-                    <textarea placeholder="Your Message" required></textarea>
+                <form id="contact-form" action="https://formspree.io/f/xovjypkq" method="POST">
+                    <input type="text" id="name" name="name" placeholder="Your Name" required>
+                    <input type="email" id="email" name="email" placeholder="Your Email" required>
+                    <textarea id="message" name="message" placeholder="Your Message" required></textarea>
                     <button type="submit" class="btn primary">Send Message</button>
                 </form>
+                <p id="status-message"></p>
             </div>
         </section>
     </div>
@@ -327,11 +378,10 @@
                     <i class="fab fa-facebook"></i>
                 </a>
             </div>
-            <p class="copyright">© 2024 S.M. Ashraful Hasan. All rights reserved.</p>
+            <p class="copyright">© 2025 S.M. Ashraful Hasan. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-

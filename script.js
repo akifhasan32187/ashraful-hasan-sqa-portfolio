@@ -107,3 +107,38 @@ function highlightNavigation() {
 window.addEventListener("scroll", highlightNavigation)
 window.addEventListener("load", highlightNavigation)
 
+// Contact Form Submission
+const contactForm = document.getElementById('contact-form');
+const statusMessage = document.getElementById('status-message');
+
+contactForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(contactForm);
+    
+    fetch(contactForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            statusMessage.textContent = 'Thanks for your submission!';
+            statusMessage.style.color = 'green';
+            contactForm.reset();
+        } else {
+            response.json().then(data => {
+                if (Object.hasOwn(data, 'errors')) {
+                    statusMessage.textContent = data["errors"].map(error => error["message"]).join(", ");
+                } else {
+                    statusMessage.textContent = "Oops! There was a problem submitting your form";
+                }
+            })
+        }
+    }).catch(error => {
+        statusMessage.textContent = "Oops! There was a problem submitting your form";
+    });
+
+    statusMessage.style.color = 'red';
+});
