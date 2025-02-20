@@ -108,37 +108,62 @@ window.addEventListener("scroll", highlightNavigation)
 window.addEventListener("load", highlightNavigation)
 
 // Contact Form Submission
-const contactForm = document.getElementById('contact-form');
-const statusMessage = document.getElementById('status-message');
+const contactForm = document.getElementById("contact-form")
+const statusMessage = document.getElementById("status-message")
 
-contactForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(contactForm);
-    
-    fetch(contactForm.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'Accept': 'application/json'
-        }
-    }).then(response => {
-        if (response.ok) {
-            statusMessage.textContent = 'Thanks for your submission!';
-            statusMessage.style.color = 'green';
-            contactForm.reset();
-        } else {
-            response.json().then(data => {
-                if (Object.hasOwn(data, 'errors')) {
-                    statusMessage.textContent = data["errors"].map(error => error["message"]).join(", ");
-                } else {
-                    statusMessage.textContent = "Oops! There was a problem submitting your form";
-                }
-            })
-        }
-    }).catch(error => {
-        statusMessage.textContent = "Oops! There was a problem submitting your form";
-    });
+contactForm.addEventListener("submit", (e) => {
+  e.preventDefault()
 
-    statusMessage.style.color = 'red';
-});
+  const formData = new FormData(contactForm)
+
+  fetch(contactForm.action, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Accept: "application/json",
+    },
+  })
+    .then((response) => {
+      if (response.ok) {
+        statusMessage.textContent = "Thanks for your submission!"
+        statusMessage.style.color = "green"
+        contactForm.reset()
+      } else {
+        response.json().then((data) => {
+          if (Object.hasOwn(data, "errors")) {
+            statusMessage.textContent = data["errors"].map((error) => error["message"]).join(", ")
+          } else {
+            statusMessage.textContent = "Oops! There was a problem submitting your form"
+          }
+        })
+      }
+    })
+    .catch((error) => {
+      statusMessage.textContent = "Oops! There was a problem submitting your form"
+    })
+
+  statusMessage.style.color = "red"
+})
+
+// Add mobile menu toggle functionality
+const mobileMenuToggle = document.querySelector(".mobile-menu-toggle")
+const navLinksContainer = document.querySelector(".nav-links")
+
+mobileMenuToggle.addEventListener("click", () => {
+  navLinksContainer.classList.toggle("active")
+})
+
+// Close mobile menu when clicking outside
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".navbar")) {
+    navLinksContainer.classList.remove("active")
+  }
+})
+
+// Close mobile menu when clicking a link
+navLinksContainer.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinksContainer.classList.remove("active")
+  })
+})
+
