@@ -1,169 +1,299 @@
-// Typing Animation
-const texts = [
-  "Software Quality Assurance Engineer",
-  "Automation Enthusiast",
-  "Agile Mindset",
-  "Team Player",
-  "Fast Learner and Explorer",
-]
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+const root = document.documentElement
+const particleField = document.querySelector(".particle-field")
 
-let currentTextIndex = 0
-const typingText = document.querySelector(".typing-text")
+if (particleField) {
+  const celestialScene = document.createElement("div")
+  celestialScene.className = "celestial-scene"
+  celestialScene.setAttribute("aria-hidden", "true")
+  celestialScene.innerHTML = `
+    <div class="planet-system">
+      <div class="planet-ring"></div>
+      <div class="planet-body"><span class="planet-markings"></span></div>
+      <div class="satellite-path">
+        <svg class="satellite" viewBox="0 0 28 20" aria-hidden="true">
+          <path class="satellite-panel" d="M1 5h8v10H1zM19 5h8v10h-8z"/>
+          <path class="satellite-frame" d="M10 7h8v7h-8zM13 3h2v15h-2zM9 10h10"/>
+        </svg>
+      </div>
+    </div>
+    <svg class="space-station" viewBox="0 0 106 42" aria-hidden="true">
+      <path class="station-panel" d="M1 8h28v26H1zM77 8h28v26H77z"/>
+      <path class="station-panel-grid" d="M8 8v26m7-26v26m7-26v26M84 8v26m7-26v26m7-26v26"/>
+      <path class="station-frame" d="M29 15h13l5-6h12l5 6h13v13H64l-5 6H47l-5-6H29zm13 0 5 13m17-13-5 13M53 9v26M42 21h22"/>
+      <circle class="station-frame" cx="53" cy="21" r="4"/>
+    </svg>
+  `
+  particleField.appendChild(celestialScene)
 
-function typeText() {
-  const currentText = texts[currentTextIndex]
-  let charIndex = 0
+  const particles = document.createDocumentFragment()
 
-  function type() {
-    if (charIndex < currentText.length) {
-      typingText.textContent += currentText.charAt(charIndex)
-      charIndex++
-      setTimeout(type, 50)
-    } else {
-      setTimeout(erase, 2000)
-    }
+  for (let index = 0; index < 72; index += 1) {
+    const particle = document.createElement("span")
+    const drift = ((index * 17) % 48) - 24
+    const isStar = index % 3 !== 0
+
+    particle.className = `ambient-particle ${isStar ? "is-star" : "is-dot"}`
+    particle.style.setProperty("--particle-x", `${(index * 37 + 13) % 96}%`)
+    particle.style.setProperty("--particle-y", `${(index * 29 + 7) % 88}%`)
+    particle.style.setProperty("--particle-duration", `${isStar ? 3 + (index % 3) : 12 + (index * 2) % 9}s`)
+    particle.style.setProperty("--particle-delay", `${-((index * 3) % 37)}s`)
+    particle.style.setProperty("--particle-drift", `${drift}px`)
+    particle.style.setProperty("--particle-drift-reverse", `${-drift / 2}px`)
+    particle.style.setProperty("--particle-rise", `${-24 - (index % 4) * 10}px`)
+    particle.style.setProperty("--particle-size", `${10 + index % 5}px`)
+    particles.appendChild(particle)
   }
 
-  function erase() {
-    if (typingText.textContent.length > 0) {
-      typingText.textContent = typingText.textContent.slice(0, -1)
-      setTimeout(erase, 30)
-    } else {
-      currentTextIndex = (currentTextIndex + 1) % texts.length
-      setTimeout(typeText, 500)
-    }
-  }
+  particleField.appendChild(particles)
 
-  type()
-}
-
-// Start typing animation
-typeText()
-
-// Theme Toggle
-const themeToggle = document.querySelector(".theme-toggle")
-const html = document.documentElement
-const themeIcon = themeToggle.querySelector("i")
-
-// Check for saved theme preference
-const savedTheme = localStorage.getItem("theme") || "light"
-html.setAttribute("data-theme", savedTheme)
-updateThemeIcon(savedTheme)
-
-themeToggle.addEventListener("click", () => {
-  const currentTheme = html.getAttribute("data-theme")
-  const newTheme = currentTheme === "light" ? "dark" : "light"
-
-  html.setAttribute("data-theme", newTheme)
-  localStorage.setItem("theme", newTheme)
-  updateThemeIcon(newTheme)
-})
-
-function updateThemeIcon(theme) {
-  themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun"
-}
-
-// Smooth Scrolling
-const navbar = document.querySelector(".navbar")
-const navbarHeight = navbar.offsetHeight
-
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", function (e) {
-    e.preventDefault()
-    const target = document.querySelector(this.getAttribute("href"))
-    if (target) {
-      const targetPosition = target.offsetTop - navbarHeight
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth",
-      })
-    }
-  })
-})
-
-// Active Navigation Highlight
-const sections = document.querySelectorAll("section")
-const navLinks = document.querySelectorAll(".nav-links a")
-
-function highlightNavigation() {
-  const scrollPosition = window.scrollY + navbarHeight + 100
-
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop
-    const sectionBottom = sectionTop + section.offsetHeight
-
-    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-      const currentId = section.getAttribute("id")
-      navLinks.forEach((link) => {
-        link.classList.remove("active")
-        if (link.getAttribute("href") === `#${currentId}`) {
-          link.classList.add("active")
+  if (!reducedMotion) {
+    const scheduleMeteor = (delay) => {
+      window.setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          const meteor = document.createElement("span")
+          meteor.className = "meteor"
+          meteor.style.setProperty("--meteor-x", `${Math.random() * 65}%`)
+          meteor.style.setProperty("--meteor-y", `${Math.random() * 24}%`)
+          meteor.style.setProperty("--meteor-angle", `${30 + Math.random() * 25}deg`)
+          meteor.style.setProperty("--meteor-travel-x", `${28 + Math.random() * 30}vw`)
+          meteor.style.setProperty("--meteor-travel-y", `${22 + Math.random() * 26}vh`)
+          particleField.appendChild(meteor)
+          meteor.addEventListener("animationend", () => meteor.remove(), { once: true })
         }
-      })
+
+        scheduleMeteor(8000 + Math.random() * 9000)
+      }, delay)
     }
+
+    scheduleMeteor(2500 + Math.random() * 2500)
+  }
+}
+
+const themeToggle = document.querySelector(".theme-toggle")
+const themeColor = document.querySelector('meta[name="theme-color"]')
+const themeIcon = themeToggle && themeToggle.querySelector("i")
+
+function applyTheme(theme, persist = false) {
+  const isLight = theme === "light"
+  root.dataset.theme = isLight ? "light" : "dark"
+
+  if (themeToggle) {
+    themeToggle.setAttribute("aria-label", `Switch to ${isLight ? "dark" : "light"} mode`)
+    themeToggle.setAttribute("aria-pressed", String(isLight))
+    const label = themeToggle.querySelector("span")
+    if (label) label.textContent = isLight ? "Dark mode" : "Light mode"
+  }
+
+  if (themeIcon) {
+    themeIcon.className = `fa-solid ${isLight ? "fa-moon" : "fa-sun"}`
+  }
+
+  if (themeColor) {
+    themeColor.setAttribute("content", isLight ? "#F1F4FA" : "#030407")
+  }
+
+  if (persist) {
+    try {
+      localStorage.setItem("portfolio-theme", isLight ? "light" : "dark")
+    } catch (error) {
+      console.warn("Could not save the color theme preference.", error)
+    }
+  }
+}
+
+if (themeToggle) {
+  let savedTheme = "dark"
+  try {
+    savedTheme = localStorage.getItem("portfolio-theme") || "dark"
+  } catch (error) {
+    console.warn("Could not load the saved color theme preference.", error)
+  }
+  applyTheme(savedTheme)
+  themeToggle.addEventListener("click", () => {
+    applyTheme(root.dataset.theme === "dark" ? "light" : "dark", true)
   })
 }
 
-window.addEventListener("scroll", highlightNavigation)
-window.addEventListener("load", highlightNavigation)
+const typingText = document.querySelector(".typing-text")
+const roles = ["Quality assurance", "Thoughtful testing", "Reliable releases"]
 
-// Contact Form Submission
-const contactForm = document.getElementById("contact-form")
-const statusMessage = document.getElementById("status-message")
+if (typingText && !reducedMotion) {
+  let roleIndex = 0
+  let characterIndex = roles[0].length
+  let deleting = false
 
-contactForm.addEventListener("submit", (e) => {
-  e.preventDefault()
+  const typeNext = () => {
+    const role = roles[roleIndex]
+    typingText.textContent = role.slice(0, characterIndex)
 
-  const formData = new FormData(contactForm)
+    if (!deleting && characterIndex === role.length) {
+      deleting = true
+      window.setTimeout(typeNext, 1500)
+      return
+    }
 
-  fetch(contactForm.action, {
-    method: "POST",
-    body: formData,
-    headers: {
-      Accept: "application/json",
-    },
+    if (deleting && characterIndex === 0) {
+      deleting = false
+      roleIndex = (roleIndex + 1) % roles.length
+    }
+
+    characterIndex += deleting ? -1 : 1
+    window.setTimeout(typeNext, deleting ? 38 : 65)
+  }
+
+  window.setTimeout(() => {
+    deleting = true
+    typeNext()
+  }, 1800)
+}
+
+const menuToggle = document.querySelector(".menu-toggle")
+const navLinks = document.querySelector(".nav-links")
+
+function closeMenu() {
+  if (!menuToggle || !navLinks) return
+  menuToggle.setAttribute("aria-expanded", "false")
+  menuToggle.setAttribute("aria-label", "Open navigation")
+  navLinks.classList.remove("is-open")
+}
+
+if (menuToggle && navLinks) {
+  menuToggle.addEventListener("click", () => {
+    const isOpen = menuToggle.getAttribute("aria-expanded") === "true"
+    menuToggle.setAttribute("aria-expanded", String(!isOpen))
+    menuToggle.setAttribute("aria-label", isOpen ? "Open navigation" : "Close navigation")
+    navLinks.classList.toggle("is-open", !isOpen)
   })
-    .then((response) => {
-      if (response.ok) {
-        statusMessage.textContent = "Thanks for your submission!"
-        statusMessage.style.color = "green"
-        contactForm.reset()
-      } else {
-        response.json().then((data) => {
-          if (Object.hasOwn(data, "errors")) {
-            statusMessage.textContent = data["errors"].map((error) => error["message"]).join(", ")
-          } else {
-            statusMessage.textContent = "Oops! There was a problem submitting your form"
-          }
-        })
+
+  navLinks.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", closeMenu)
+  })
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu()
+  })
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".site-header")) closeMenu()
+  })
+}
+
+const revealElements = document.querySelectorAll(".reveal")
+
+if ("IntersectionObserver" in window && !reducedMotion) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible")
+        observer.unobserve(entry.target)
       }
     })
-    .catch((error) => {
-      statusMessage.textContent = "Oops! There was a problem submitting your form"
-    })
+  }, { threshold: 0.12, rootMargin: "0px 0px -35px 0px" })
 
-  statusMessage.style.color = "red"
-})
+  revealElements.forEach((element) => revealObserver.observe(element))
+} else {
+  revealElements.forEach((element) => element.classList.add("is-visible"))
+}
 
-// Add mobile menu toggle functionality
-const mobileMenuToggle = document.querySelector(".mobile-menu-toggle")
-const navLinksContainer = document.querySelector(".nav-links")
+const progressBar = document.querySelector(".scroll-progress")
+const scrollToTopButton = document.querySelector(".floating-action-top")
+const scrollWater = document.querySelector(".water")
+const heroPortrait = document.querySelector(".portrait-frame img")
+const floatingActions = document.querySelector(".floating-actions")
+let scrollUpdatePending = false
 
-mobileMenuToggle.addEventListener("click", () => {
-  navLinksContainer.classList.toggle("active")
-})
-
-// Close mobile menu when clicking outside
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".navbar")) {
-    navLinksContainer.classList.remove("active")
-  }
-})
-
-// Close mobile menu when clicking a link
-navLinksContainer.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    navLinksContainer.classList.remove("active")
+function updateScrollProgress() {
+  if (!progressBar || scrollUpdatePending) return
+  scrollUpdatePending = true
+  window.requestAnimationFrame(() => {
+    const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight
+    const progress = scrollableHeight > 0 ? (window.scrollY / scrollableHeight) * 100 : 0
+    const progressValue = Math.max(0, Math.min(progress, 100))
+    progressBar.style.width = `${progressValue}%`
+    if (scrollWater) scrollWater.style.setProperty("--scroll-progress", `${progressValue}%`)
+    if (scrollToTopButton) {
+      const progressLabel = `Page progress: ${Math.round(progressValue)}%`
+      scrollToTopButton.setAttribute("aria-label", `Back to top — ${progressLabel}`)
+      scrollToTopButton.setAttribute("data-label", progressLabel)
+    }
+    if (floatingActions) {
+      floatingActions.classList.toggle("is-visible", window.scrollY > 50)
+    }
+    if (heroPortrait && !reducedMotion) {
+      heroPortrait.style.translate = `0 ${-Math.min(window.scrollY * 0.035, 18)}px`
+    }
+    scrollUpdatePending = false
   })
-})
+}
 
+window.addEventListener("scroll", updateScrollProgress, { passive: true })
+window.addEventListener("resize", updateScrollProgress)
+updateScrollProgress()
+
+const contactForm = document.querySelector("#contact-form")
+const statusMessage = document.querySelector("#status-message")
+
+if (contactForm && statusMessage) {
+  contactForm.addEventListener("submit", async (event) => {
+    event.preventDefault()
+    const submitButton = contactForm.querySelector('button[type="submit"]')
+    submitButton.disabled = true
+    statusMessage.textContent = "Sending your message…"
+
+    try {
+      const response = await fetch(contactForm.action, {
+        method: "POST",
+        body: new FormData(contactForm),
+        headers: { Accept: "application/json" },
+      })
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null)
+        const errors = result && Array.isArray(result.errors)
+          ? result.errors.map((error) => error.message).join(", ")
+          : ""
+        throw new Error(errors || "Your message could not be sent. Please try again.")
+      }
+
+      statusMessage.textContent = "Thanks for your message — I’ll be in touch."
+      contactForm.reset()
+    } catch (error) {
+      statusMessage.textContent = error instanceof Error
+        ? error.message
+        : "Your message could not be sent. Please try again."
+    } finally {
+      submitButton.disabled = false
+    }
+  })
+}
+
+const sectionObserver = "IntersectionObserver" in window
+  ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        const isCurrent = link.getAttribute("href") === `#${entry.target.id}`
+        link.classList.toggle("active", isCurrent)
+        if (isCurrent) link.setAttribute("aria-current", "location")
+        else link.removeAttribute("aria-current")
+      })
+    })
+  }, { rootMargin: "-30% 0px -60% 0px" })
+  : null
+
+if (sectionObserver) {
+  document.querySelectorAll("main section[id]").forEach((section) => sectionObserver.observe(section))
+}
+
+const siteFooter = document.querySelector(".site-footer")
+
+if (siteFooter && floatingActions && "IntersectionObserver" in window) {
+  const footerObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      floatingActions.classList.toggle("is-footer-visible", entry.isIntersecting)
+    })
+  }, { threshold: 0.1 })
+
+  footerObserver.observe(siteFooter)
+}
