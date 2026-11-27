@@ -286,6 +286,22 @@ if (sectionObserver) {
   document.querySelectorAll("main section[id]").forEach((section) => sectionObserver.observe(section))
 }
 
+document.querySelectorAll(".project-grid, .certification-grid").forEach((grid) => {
+  const track = grid.querySelector(".project-track, .certification-track")
+  if (!track) return
+
+  grid.addEventListener("pointerenter", () => track.classList.add("is-paused"))
+  grid.addEventListener("pointerleave", () => track.classList.remove("is-paused"))
+  grid.addEventListener("focusin", () => track.classList.add("is-paused"))
+  grid.addEventListener("focusout", (event) => {
+    if (!grid.contains(event.relatedTarget)) track.classList.remove("is-paused")
+  })
+})
+
+document.querySelectorAll(
+  '.project-group[aria-hidden="true"] a, .certification-group[aria-hidden="true"] a'
+).forEach((link) => { link.tabIndex = -1 })
+
 const siteFooter = document.querySelector(".site-footer")
 
 if (siteFooter && floatingActions && "IntersectionObserver" in window) {
@@ -296,4 +312,256 @@ if (siteFooter && floatingActions && "IntersectionObserver" in window) {
   }, { threshold: 0.1 })
 
   footerObserver.observe(siteFooter)
+}
+/* ===================== Additions ===================== */
+/* Boot screen (once per session) */
+try {
+  if (!reducedMotion && !sessionStorage.getItem("booted")) {
+    sessionStorage.setItem("booted", "1")
+    const boot = document.createElement("div")
+    boot.className = "boot"
+    boot.setAttribute("aria-hidden", "true")
+    boot.innerHTML = `<span>> initializing test environment…</span><span>> loading requirements… <b>OK</b></span><span>> running smoke checks… <b>PASS</b></span><div class="bar"><i></i></div>`
+    document.body.appendChild(boot)
+    window.setTimeout(() => { boot.classList.add("out"); window.setTimeout(() => boot.remove(), 600) }, 1400)
+  }
+} catch (e) { /* ignore */ }
+
+/* Theme change as a circular wave from the toggle */
+if (themeToggle && document.startViewTransition && !reducedMotion) {
+  themeToggle.addEventListener("click", (event) => {
+    event.stopImmediatePropagation()
+    const r = themeToggle.getBoundingClientRect()
+    const x = r.left + r.width / 2, y = r.top + r.height / 2
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+    const next = root.dataset.theme === "dark" ? "light" : "dark"
+    document.startViewTransition(() => applyTheme(next, true)).ready.then(() => {
+      root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+        { duration: 650, easing: "ease-in", pseudoElement: "::view-transition-new(root)" })
+    }).catch(() => {})
+  }, true)
+}
+
+/* Cursor radar */
+if (!reducedMotion && window.matchMedia("(pointer: fine)").matches) {
+  const radar = document.createElement("div")
+  radar.className = "radar"
+  radar.setAttribute("aria-hidden", "true")
+  document.body.appendChild(radar)
+  let tx = 0, ty = 0, cx = 0, cy = 0
+  window.addEventListener("pointermove", (e) => {
+    tx = e.clientX; ty = e.clientY
+    radar.classList.add("show")
+    radar.classList.toggle("hot", !!e.target.closest("a, button, .tech-pill, .cn"))
+  }, { passive: true })
+  document.addEventListener("pointerleave", () => radar.classList.remove("show"))
+  const follow = () => { cx += (tx - cx) * .2; cy += (ty - cy) * .2; radar.style.transform = `translate(${cx}px,${cy}px)`; requestAnimationFrame(follow) }
+  follow()
+}
+
+/* Skills constellation */
+const constellation = document.getElementById("constellation")
+if (constellation) {
+  const NS = "http://www.w3.org/2000/svg"
+  const groups = [
+    { name: "QUALITY", x: 250, y: 130, skills: ["Manual testing", "Functional", "Regression", "Exploratory", "API testing", "Selenium WebDriver"] },
+    { name: "TRACKING", x: 155, y: 360, skills: ["Jira", "ClickUp", "Ezzyplan"] },
+    { name: "DEVELOPMENT", x: 650, y: 130, skills: ["Python", "Java", "C++", "C", "HTML", "CSS", "JavaScript", "jQuery", "Flask"] },
+    { name: "DATA & TOOLS", x: 640, y: 360, skills: ["Git", "Scikit-Learn", "NumPy", "Pandas", "TensorFlow", "PyTorch", "Keras", "NLP", "LaTeX", "Microsoft Office"] },
+  ]
+  const cross = [["Selenium WebDriver", "Python"], ["Flask", "Python"], ["Pandas", "NumPy"], ["Keras", "TensorFlow"], ["NLP", "PyTorch"], ["Scikit-Learn", "NumPy"]]
+  const pos = {}, lines = [], nodes = []
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v)); parent.appendChild(n); return n }
+  const lineLayer = el("g", {}, constellation)
+  const signalLayer = el("g", { "aria-hidden": "true" }, constellation)
+  const nodeLayer = el("g", {}, constellation)
+  groups.forEach((g) => {
+    pos[g.name] = { x: g.x, y: g.y }
+    g.skills.forEach((s, i) => {
+      const a = (i / g.skills.length) * Math.PI * 2 - Math.PI / 2, rad = g.skills.length > 6 ? 118 : 96
+      pos[s] = { x: g.x + Math.cos(a) * rad * 1.25, y: g.y + Math.sin(a) * rad * .8 }
+    })
+  })
+  const link = (a, b, extra) => {
+    const l = el("line", { class: `cl ${extra || ""}`, x1: pos[a].x, y1: pos[a].y, x2: pos[b].x, y2: pos[b].y }, lineLayer)
+    lines.push({ a, b, l })
+  }
+  groups.forEach((g) => g.skills.forEach((s) => link(g.name, s)))
+  cross.forEach(([a, b]) => link(a, b, "cx"))
+  const signalRoutes = [
+    ["QUALITY", "Manual testing"], ["QUALITY", "API testing"],
+    ["TRACKING", "Ezzyplan"], ["DEVELOPMENT", "Python"],
+    ["DEVELOPMENT", "JavaScript"], ["DATA & TOOLS", "TensorFlow"],
+    ["DATA & TOOLS", "Pandas"], ["Selenium WebDriver", "Python"]
+  ]
+  signalRoutes.forEach(([fromName, toName], i) => {
+    const from = pos[fromName]
+    const to = pos[toName]
+    const duration = `${3.2 + i * .35}s`
+    const signal = el("circle", {
+      class: `signal ${i % 3 === 0 ? "signal-lime" : ""}`,
+      r: 2.5
+    }, signalLayer)
+    el("animateMotion", {
+      dur: duration,
+      begin: `${i * .4}s`,
+      repeatCount: "indefinite",
+      path: `M ${from.x} ${from.y} L ${to.x} ${to.y}`
+    }, signal)
+    el("animate", {
+      attributeName: "opacity",
+      values: "0;1;1;0",
+      keyTimes: "0;.12;.82;1",
+      dur: duration,
+      begin: `${i * .4}s`,
+      repeatCount: "indefinite"
+    }, signal)
+  })
+  const addNode = (name, hub, delay) => {
+    const n = el("g", { class: `cn ${hub ? "hub" : ""}`, tabindex: "0", style: `animation-delay:${delay}s` }, nodeLayer)
+    if (hub) el("circle", { class: "hub-halo", cx: pos[name].x, cy: pos[name].y, r: 15 }, n)
+    el("circle", { cx: pos[name].x, cy: pos[name].y, r: hub ? 9 : 5 }, n)
+    const t = el("text", { x: pos[name].x, y: pos[name].y - (hub ? 16 : 11), "text-anchor": "middle" }, n)
+    t.textContent = name
+    nodes.push({ name, n })
+    const focus = (on) => {
+      constellation.classList.toggle("has-focus", on)
+      nodes.forEach((o) => o.n.classList.remove("on"))
+      lines.forEach((o) => o.l.classList.remove("on"))
+      if (!on) return
+      n.classList.add("on")
+      lines.forEach((o) => {
+        if (o.a !== name && o.b !== name) return
+        o.l.classList.add("on")
+        nodes.forEach((p) => { if (p.name === o.a || p.name === o.b) p.n.classList.add("on") })
+      })
+    }
+    n.addEventListener("pointerenter", () => focus(true))
+    n.addEventListener("pointerleave", () => focus(false))
+    n.addEventListener("focus", () => focus(true))
+    n.addEventListener("blur", () => focus(false))
+    n.addEventListener("click", () => focus(true))
+  }
+  groups.forEach((g, i) => { addNode(g.name, true, i * .4); g.skills.forEach((s, j) => addNode(s, false, (i + j) * .3)) })
+}
+
+/* Quality lab: bug lifecycle, test console, readiness gauge, counters */
+const labConsole = document.getElementById("console")
+if (labConsole) {
+  const stages = [...document.querySelectorAll("#lifecycle li")]
+  const bugStatus = document.getElementById("bug-status")
+  const gaugeFill = document.getElementById("gauge-fill")
+  const gaugePct = document.getElementById("gauge-pct")
+  const gaugeLabel = document.getElementById("gauge-label")
+  const replay = document.querySelector(".lab-replay")
+  const tests = ["Login with valid credentials", "Reject invalid email format", "Block empty required fields", "Reject negative quantity", "Regression: previous release flows"]
+  let token = 0
+
+  const setGauge = (pct, ready) => {
+    gaugeFill.style.strokeDashoffset = String(276.5 * (1 - pct / 100))
+    gaugePct.textContent = `${Math.round(pct)}%`
+    gaugeLabel.textContent = ready ? "READY TO SHIP" : "RELEASE READINESS"
+    if (replay) {
+      const complete = pct >= 100
+      replay.textContent = complete
+        ? "Complete"
+        : pct > 0
+          ? "Test in Progress"
+          : "Start"
+      replay.classList.toggle("is-start", pct === 0)
+      replay.classList.toggle("is-active", pct > 0 && !complete)
+      replay.classList.toggle("is-complete", complete)
+    }
+  }
+  const addLine = (text, cls) => {
+    const s = document.createElement("span")
+    s.className = `ln ${cls || ""}`
+    s.textContent = text
+    labConsole.appendChild(s)
+  }
+  const runTests = () => {
+    const mine = ++token
+    labConsole.innerHTML = ""
+    setGauge(0, false)
+    if (reducedMotion) {
+      tests.forEach((t) => addLine(`✔ PASS  ${t}`, "ok"))
+      addLine("RELEASE READY — ALL CHECKS PASSED", "ok")
+      setGauge(100, true)
+      return
+    }
+    let i = 0
+    const step = () => {
+      if (mine !== token) return
+      if (i < tests.length) {
+        addLine(`▶ ${tests[i]}…`, "run")
+        window.setTimeout(() => {
+          if (mine !== token) return
+          addLine(`✔ PASS  ${tests[i]}`, "ok")
+          i += 1
+          setGauge((i / tests.length) * 100, false)
+          window.setTimeout(step, 350)
+        }, 650)
+      } else {
+        addLine("RELEASE READY — ALL CHECKS PASSED", "ok")
+        setGauge(100, true)
+        window.setTimeout(() => {
+          if (mine === token) runTests()
+        }, 2400)
+      }
+    }
+    step()
+  }
+  const statusNames = ["NEW", "ASSIGNED", "FIXED", "RETESTED", "CLOSED"]
+  let stage = reducedMotion ? 4 : 0
+  const paintStage = () => {
+    stages.forEach((li, idx) => { li.classList.toggle("done", idx < stage); li.classList.toggle("now", idx === stage) })
+    if (bugStatus) bugStatus.textContent = statusNames[stage]
+  }
+  paintStage()
+  if (!reducedMotion) window.setInterval(() => { stage = (stage + 1) % stages.length; paintStage() }, 1600)
+
+  let started = false
+  const startObs = new IntersectionObserver((entries) => entries.forEach((en) => {
+    if (en.isIntersecting && !started) { started = true; runTests(); startObs.disconnect() }
+  }), { threshold: 0.35 })
+  startObs.observe(labConsole)
+  if (replay) replay.addEventListener("click", runTests)
+
+  const counters = document.querySelectorAll("[data-count]")
+  const countObs = new IntersectionObserver((entries, o) => entries.forEach((en) => {
+    if (!en.isIntersecting) return
+    o.unobserve(en.target)
+    const end = Number(en.target.dataset.count)
+    if (reducedMotion) { en.target.textContent = end; return }
+    const t0 = performance.now()
+    const tick = (now) => {
+      const p = Math.min((now - t0) / 1200, 1)
+      en.target.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)))
+      if (p < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }), { threshold: 0.6 })
+  counters.forEach((c) => countObs.observe(c))
+}
+
+/* Contact form success check */
+if (statusMessage) {
+  new MutationObserver(() => statusMessage.classList.toggle("sent", statusMessage.textContent.startsWith("Thanks")))
+    .observe(statusMessage, { childList: true, characterData: true, subtree: true })
+}
+
+/* Easter egg */
+const eggBug = document.querySelector(".egg-bug")
+if (eggBug) {
+  const toast = document.createElement("div")
+  toast.className = "egg-toast"
+  toast.setAttribute("role", "status")
+  document.body.appendChild(toast)
+  const msgs = ["🐞 Bug found! Severity: cosmetic. Status: reported ✔", "🐞 Reproduced. Fixed. Retested. Closed. You’d make a good tester.", "🐞 No bugs here — I tested it twice."]
+  let n = 0
+  eggBug.addEventListener("click", () => {
+    toast.textContent = msgs[n++ % msgs.length]
+    toast.classList.add("show")
+    window.setTimeout(() => toast.classList.remove("show"), 2800)
+  })
 }
